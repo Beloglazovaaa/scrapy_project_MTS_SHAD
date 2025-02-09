@@ -92,6 +92,10 @@ ROBOTSTXT_OBEY = False
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = 'utf-8'
+FEED_FORMAT = 'csv'
+FEED_URI = 'films.csv'
+FEED_EXPORT_FIELDS = ['Название', 'Жанр', 'Режиссер', 'Страна', 'Год', 'Рейтинг IMDB']
+FEED_EXPORT_APPEND = True
 
 # Limit number of runs because of the IMDB
 CLOSESPIDER_ITEMCOUNT = 50

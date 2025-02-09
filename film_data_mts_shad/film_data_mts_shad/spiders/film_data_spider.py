@@ -10,7 +10,6 @@ class FilmDataSpider(scrapy.Spider):
         """Фильтрует список, удаляя служебные обозначения."""
         pattern = r'(\[|\()\w+.?(\]|\))|\xa0|\n|\d|рус\.|англ\.|\[.*?\]|/|\*|\(|\)|,'
         cleaned_data = [text.strip() for text in data if not re.search(pattern, text)]
-        # Разбиваем полученную строку по запятым и удаляем возможные пустые строки
         return [s for s in ','.join(cleaned_data).replace(',,,', ',').replace(',,', ',').split(',') if s]
 
     def parse(self, response):
@@ -18,14 +17,12 @@ class FilmDataSpider(scrapy.Spider):
         links = response.xpath('//div[@id="mw-pages"]//div[@class="mw-category-group"]//a/@href').getall()
         for link in links:
             yield response.follow(link, callback=self.parse_film_data)
-
         next_page = response.xpath('//a[contains(text(), "Следующая страница")]/@href').get()
         if next_page:
             yield response.follow(next_page, callback=self.parse)
 
     def parse_film_data(self, response):
         """Извлекает данные о фильме со страницы фильма."""
-        # Пытаемся получить название из инфobox, если не найдено — используем заголовок страницы
         title = response.xpath('//*[@class="infobox-above"]//text()').get()
         if not title:
             title = response.xpath('//h1[@id="firstHeading"]/text()').get()
@@ -47,12 +44,8 @@ class FilmDataSpider(scrapy.Spider):
             'Рейтинг IMDB': None,
         }
 
-        # Проверяем наличие ссылки на IMDb
-        imdb_url = response.xpath('//*[@data-wikidata-property-id="P345"]//a/@href').get()
+        imdb_url = response.xpath('//a[contains(@href, "imdb.com/title/")]/@href').get()
         if imdb_url:
-            # Если ссылка начинается с "//", добавляем протокол
-            if imdb_url.startswith('//'):
-                imdb_url = 'https:' + imdb_url
             yield scrapy.Request(imdb_url, callback=self.parse_imdb_rating, cb_kwargs={'data': data})
         else:
             yield data
